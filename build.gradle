@@ -1,0 +1,44 @@
+/*
+ * ---------------------------------------------------------------------------------------------------------------------
+ *  Copyright 2016-2020 Doug Meyer <doug@dougdev.net>
+ *
+ *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ *  Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ *  warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ *  more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ *  <http://www.gnu.org/licenses/>.
+ * ---------------------------------------------------------------------------------------------------------------------
+ */
+ 
+plugins {id "eclipse"}
+
+allprojects {buildDir = "${rootDir}/build"}
+
+ext {
+  jdkDir = System.getProperty("java.home")
+  os     = System.getProperty("os.name").toLowerCase()
+  arch   = System.getProperty("os.arch").toLowerCase()
+  osArch = "??"
+  if      (arch == "x86")   {osArch = "${os}32"}
+  else if (arch == "amd64") {osArch = "${os}64"}
+  libPrefix = ".???"
+  if      (os == "linux")   {libPrefix = "lib" }
+  else if (os == "windows") {libPrefix = ""    }
+  libSuffix = ".???"
+  if      (os == "linux")   {libSuffix = ".so" }
+  else if (os == "windows") {libSuffix = ".dll"}
+  
+  javaSrcMain = "${rootDir}/javaSrc/main"
+  javaSrcTest = "${rootDir}/javaSrc/test"
+  cppSrcMain  = "${rootDir}/cppSrc/main"
+  cppSrcTest  = "${rootDir}/cppSrc/test"
+  jniAutogen  = "${cppSrcMain}/jni/autogen"
+  prebuilt    = "${rootDir}/prebuilt"
+  prebuiltInc = "${prebuilt}/include"
+  prebuiltOs  = "${prebuilt}/${osArch}"
+}

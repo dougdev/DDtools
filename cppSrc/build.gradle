@@ -1,0 +1,161 @@
+/*
+ * ---------------------------------------------------------------------------------------------------------------------
+ *  Copyright 2016-2020 Doug Meyer <doug@dougdev.net>
+ *
+ *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ *  Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ *  warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ *  more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ *  <http://www.gnu.org/licenses/>.
+ * ---------------------------------------------------------------------------------------------------------------------
+ */
+plugins {id "cpp"}
+
+build.mustRunAfter ":javaSrc:classes"
+
+model {
+  repositories {
+    libs(PrebuiltLibraries) {
+      java {
+        headers.srcDir jniAutogen
+        headers.srcDir "${jdkDir}/include"
+        if      (osArch.startsWith("linux")) { headers.srcDir "${jdkDir}/include/linux" }
+        else if (osArch == "windows-x86")    { headers.srcDir "${jdkDir}/include/win32" }
+      }
+      sdl2 {
+        headers.srcDir "${prebuiltInc}/sdl2"
+        binaries.withType(SharedLibraryBinary) {
+          sharedLibraryFile = file("${prebuiltOs}/sdl2/${libPrefix}SDL2${libSuffix}")
+        }
+      }
+      avcodec {
+        headers.srcDir "${prebuiltInc}/ffmpeg"
+        binaries.withType(SharedLibraryBinary) {
+          sharedLibraryFile = file("${prebuiltOs}/ffmpeg/${libPrefix}avcodec${libSuffix}")
+        }
+      }
+      avdevice {
+        headers.srcDir "${prebuiltInc}/ffmpeg"
+        binaries.withType(SharedLibraryBinary) {
+          sharedLibraryFile = file("${prebuiltOs}/ffmpeg/${libPrefix}avdevice${libSuffix}")
+        }
+      }
+      avfilter {
+        headers.srcDir "${prebuiltInc}/ffmpeg"
+        binaries.withType(SharedLibraryBinary) {
+          sharedLibraryFile = file("${prebuiltOs}/ffmpeg/${libPrefix}avfilter${libSuffix}")
+        }
+      }
+      avformat {
+        headers.srcDir "${prebuiltInc}/ffmpeg"
+        binaries.withType(SharedLibraryBinary) {
+          sharedLibraryFile = file("${prebuiltOs}/ffmpeg/${libPrefix}avformat${libSuffix}")
+        }
+      }
+      avutil {
+        headers.srcDir "${prebuiltInc}/ffmpeg"
+        binaries.withType(SharedLibraryBinary) {
+          sharedLibraryFile = file("${prebuiltOs}/ffmpeg/${libPrefix}avutil${libSuffix}")
+        }
+      }
+      postproc {
+        headers.srcDir "${prebuiltInc}/ffmpeg"
+        binaries.withType(SharedLibraryBinary) {
+          sharedLibraryFile = file("${prebuiltOs}/ffmpeg/${libPrefix}postproc${libSuffix}")
+        }
+      }
+      swresample {
+        headers.srcDir "${prebuiltInc}/ffmpeg"
+        binaries.withType(SharedLibraryBinary) {
+          sharedLibraryFile = file("${prebuiltOs}/ffmpeg/${libPrefix}swresample${libSuffix}")
+        }
+      }
+      swscale {
+        headers.srcDir "${prebuiltInc}/ffmpeg"
+        binaries.withType(SharedLibraryBinary) {
+          sharedLibraryFile = file("${prebuiltOs}/ffmpeg/${libPrefix}swscale${libSuffix}")
+        }
+      }
+    }
+  }
+  components {
+    ddtools(NativeLibrarySpec) {
+      binaries.withType(StaticLibraryBinarySpec) { buildable = false }
+      binaries.all { cCompiler.args "-O3" }
+      sources.cpp {
+        source {
+          srcDir cppSrcMain
+          exclude "jni"
+        }
+        exportedHeaders {
+          srcDir cppSrcMain
+          exclude "jni"
+        }
+        lib library: "java", linkage: "api"
+      }
+    }
+    ddcpptest(NativeLibrarySpec) {
+      binaries.withType(StaticLibraryBinarySpec) { buildable = false }
+      binaries.all { cCompiler.args "-O3" }
+      sources.cpp {
+        source.srcDir "${cppSrcMain}/jni/cpptest"
+        exportedHeaders.srcDir "${cppSrcMain}/jni/cpptest"
+        lib library: "java", linkage: "api"
+      }
+    }
+    ddopengl(NativeLibrarySpec) {
+      binaries.withType(StaticLibraryBinarySpec) { buildable = false }
+      binaries.all {
+        cCompiler.args "-O3"
+        if      (os == "windows") { linker.args "-lopengl32" }
+        else if (os == "linux")   { linker.args "-lGL" }
+      }
+      sources.cpp {
+        source.srcDir "${cppSrcMain}/jni/opengl"
+        exportedHeaders.srcDir "${cppSrcMain}/jni/opengl"
+        lib library: "java", linkage: "api"
+      }
+    }
+    ddsdl(NativeLibrarySpec) {
+      binaries.withType(StaticLibraryBinarySpec) { buildable = false }
+      binaries.all { cCompiler.args "-O3" }
+      sources.cpp {
+        source.srcDir "${cppSrcMain}/jni/sdl2"
+        exportedHeaders.srcDir "${cppSrcMain}/jni/sdl2"
+        lib library: "java", linkage: "api"
+        lib library: "sdl2"
+      }
+    }
+    ddffmpeg(NativeLibrarySpec) {
+      binaries.withType(StaticLibraryBinarySpec) { buildable = false }
+      binaries.all { cCompiler.args "-O3" }
+      sources.cpp {
+        source.srcDir "${cppSrcMain}/jni/ffmpeg"
+        exportedHeaders.srcDir "${cppSrcMain}/jni/ffmpeg"
+        lib library: "java", linkage: "api"
+        lib library: "avcodec"
+        lib library: "avdevice"
+        lib library: "avfilter"
+        lib library: "avformat"
+        lib library: "avutil"
+        lib library: "postproc"
+        lib library: "swresample"
+        lib library: "swscale"
+      }
+    }
+    ddvulkan(NativeLibrarySpec) {
+      binaries.withType(StaticLibraryBinarySpec) { buildable = false }
+      binaries.all { cCompiler.args "-O3" }
+      sources.cpp {
+        source.srcDir "${cppSrcMain}/jni/vulkan"
+        exportedHeaders.srcDir "${cppSrcMain}/jni/vulkan"
+        lib library: "java", linkage: "api"
+      }
+    }
+  }
+}
