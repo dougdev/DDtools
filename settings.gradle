@@ -1,0 +1,3 @@
+rootProject.name = 'DDtools'
+include ":javaSrc"
+include ":cppSrc"
