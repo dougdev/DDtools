@@ -1,0 +1,78 @@
+/*
+ * ---------------------------------------------------------------------------------------------------------------------
+ *  Copyright 2016-2020 Doug Meyer <doug@dougdev.net>
+ *
+ *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General
+ *  Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ *  warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ *  more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License along with this program. If not, see
+ *  <http://www.gnu.org/licenses/>.
+ * ---------------------------------------------------------------------------------------------------------------------
+ */
+plugins {id "java"}
+
+repositories {jcenter()}
+
+dependencies {
+  testImplementation group: "org.testng", name: "testng", version: "7.1.+"
+}
+
+sourceSets {
+  main.java.srcDirs = [javaSrcMain]
+  test.java.srcDirs = [javaSrcTest]
+}
+
+compileJava {
+  options.compilerArgs = ["-h", file("${jniAutogen}").absolutePath]
+}
+
+test {
+  useTestNG()
+  testLogging {
+    outputs.upToDateWhen {false}
+    showStandardStreams true
+    showCauses true
+    showStackTraces true
+    showExceptions true
+    exceptionFormat = 'full'
+  }
+}
+
+clean.doLast {file(jniAutogen).list().each {delete "${jniAutogen}/${it}"}}
+
+task copyJarContents {
+  dependsOn ":cppSrc:build"
+  doLast {
+    file("${buildDir}/jar/${osArch}").mkdirs()
+    copy {
+      from "${buildDir}/libs/ddtools/shared"
+      from "${buildDir}/libs/ddcpptest/shared"
+      from "${buildDir}/libs/ddsdl/shared"
+      from "${buildDir}/libs/ddffmpeg/shared"
+      from "${buildDir}/libs/ddopengl/shared"
+      from "${buildDir}/libs/ddvulkan/shared"
+      into "${buildDir}/jar/${osArch}"
+    }
+    copy {
+      from "${prebuiltOs}/sdl2"
+      from "${prebuiltOs}/ffmpeg"
+      into "${buildDir}/jar/${osArch}"
+    }
+    copy {
+      from    "${rootDir}"
+      include "LICENSE.md"
+      into    "${buildDir}/jar"
+    }
+  }
+}
+
+jar {
+  dependsOn copyJarContents
+  baseName "DDtools"
+  from "${buildDir}/jar"
+}
