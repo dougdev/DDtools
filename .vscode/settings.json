@@ -1,7 +1,6 @@
 {
     "java.configuration.updateBuildConfiguration": "automatic",
-    "java.project.sourcePaths": [
-        "javaSrc/main"
-    ],
-    "java.dependency.packagePresentation": "hierarchical"
+    "java.project.sourcePaths": [ "javaSrc/main" ],
+    "java.dependency.packagePresentation": "hierarchical",
+    "java.format.settings.url": "DDtoolsFormat.xml"
 }
